@@ -17,18 +17,14 @@
           <button click-handle="incrementCounter">Increment Counter</button>
       </div>`,
       controller: function (context) {
-        var DataBus
-        context.setBus = function (props) {
-          DataBus = props
-          context.$set("dataBus", props)
-          var increment = props.$get("incrementCounter")
-          context.incrementCounter = function () {
-            increment()
-          };
-          props.$watch("counter", (count) => {
-            context.$set("counter", count)
-          })
-        }
+        var props = context.$getProps()
+        var increment = props.$get("incrementCounter")
+        context.incrementCounter = function () {
+          increment()
+        };
+        props.$watch("counter", (count) => {
+          context.$set("counter", count)
+        })
       }
     });
 
@@ -51,10 +47,8 @@
           context.$set('counter', currentCounter + 1);
         };
         bus.$set('incrementCounter', context.incrementCounter)
-        var childComponent = context.$createChild(ChildComponent );
-        var childComponent2 = context.$createChild(ChildComponent);
-        childComponent.setBus(bus)
-        childComponent2.setBus(bus)
+        var childComponent = context.$createChild(ChildComponent, {props: bus});
+        var childComponent2 = context.$createChild(ChildComponent, {props: bus});
         context.$set('childComponent', childComponent);
         context.$set('childComponent2', childComponent2);
 

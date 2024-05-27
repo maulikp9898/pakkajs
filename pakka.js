@@ -51,7 +51,7 @@
                 options.controller = function() {};
             }
 
-            return function() {
+            return function(props) {
 
                 // instance of the context
                 var context = this,
@@ -63,6 +63,13 @@
                     // initializing the properties object
                     properties = context.$properties = {};
 
+                context.$getProps = function() {
+                    try {
+                        return props.props
+                    } catch (e) {
+                        return undefined
+                    }
+                }
                 // getter to get property's value
                 context.$get = function(prop) {
                     try {
