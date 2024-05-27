@@ -1,0 +1,75 @@
+<html>
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <script src="../pakka.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div bind-component="parentComponent"></div>
+  </div>
+  <script>
+    var ChildComponent = pakka({
+      html: `<div>
+      <div>Counter: <span bind-text="counter"></span>
+      </div>
+          <button click-handle="incrementCounter">Increment Counter</button>
+      </div>`,
+      controller: function (context) {
+        var DataBus
+        context.setBus = function (props) {
+          DataBus = props
+          context.$set("dataBus", props)
+          var increment = props.$get("incrementCounter")
+          context.incrementCounter = function () {
+            increment()
+          };
+          props.$watch("counter", (count) => {
+            context.$set("counter", count)
+          })
+        }
+      }
+    });
+
+    var ParentComponent = pakka({
+      html: `
+        <div>
+          <div bind-component="childComponent"></div>
+          <div bind-component="childComponent2"></div>
+        </div>
+      `,
+      controller: function (context) {
+        var bus = pakka.create()
+        console.log("BUS ", bus)
+        context.$watch("counter", (counter) => {
+          bus.$set("counter", counter)
+        })
+        context.$set('counter', 0);
+        context.incrementCounter = function () {
+          var currentCounter = context.$get('counter');
+          context.$set('counter', currentCounter + 1);
+        };
+        bus.$set('incrementCounter', context.incrementCounter)
+        var childComponent = context.$createChild(ChildComponent );
+        var childComponent2 = context.$createChild(ChildComponent);
+        childComponent.setBus(bus)
+        childComponent2.setBus(bus)
+        context.$set('childComponent', childComponent);
+        context.$set('childComponent2', childComponent2);
+
+
+      }
+    });
+
+    var app = pakka.create({
+      elements: [document.getElementById('app')],
+      controller: function (context) {
+        var parentComponent = new ParentComponent();
+        context.$set('parentComponent', parentComponent);
+      }
+    });
+  </script>
+</body>
+
+</html>
